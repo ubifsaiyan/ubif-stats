@@ -9,6 +9,7 @@
   --green: #067647;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); background: var(--bg); }
 h1 { font-size: 18px; margin: 0; }
 h2 { font-size: 15px; margin: 0 0 10px; }
