@@ -1,0 +1,64 @@
+rules_version = '2';
+
+// Firestore rules for the "uBiF Web Extensions Analytics" project (ubif-web-extensions-analytics).
+// Paste into Firebase console -> Firestore Database -> Rules -> Publish.
+//
+// events/{id}  usage records from uBiF Web Extensions (1.4.4+). Anyone can ADD a record with the
+//              known fields (the extension doesn't sign in); nobody can change or delete one, and
+//              only the stats page's allowed accounts can read them.
+// config/{doc} settings for the stats page (seconds saved per action, extra allowed accounts).
+//              Allowed accounts only.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && (request.auth.token.email in ['ubifsaiyan@gmail.com', 'robert.wilkins@ubreakifix.com']
+          || (exists(/databases/$(database)/documents/config/admins)
+            && request.auth.token.email in get(/databases/$(database)/documents/config/admins).data.get('emails', [])));
+    }
+
+    function optStr(d, k, max) { return !(k in d) || (d[k] is string && d[k].size() <= max); }
+    function optInt(d, k, max) { return !(k in d) || (d[k] is int && d[k] >= 0 && d[k] <= max); }
+    function optBool(d, k) { return !(k in d) || d[k] is bool; }
+
+    function validEvent(d) {
+      return d.keys().hasAll(['tool', 'event', 'store', 'install', 'account', 'version', 'toolVersion',
+                              'browser', 'test', 'at', 'day', 'ago', 'received'])
+        && d.keys().hasOnly(['tool', 'event', 'store', 'install', 'account', 'version', 'toolVersion',
+                             'browser', 'test', 'at', 'day', 'ago', 'received',
+                             'code', 'service', 'program', 'step', 'from', 'seconds', 'standIn',
+                             'missing', 'choice', 'amount', 'repeat', 'filled', 'partial', 'tools', 'toolsOff'])
+        && d.tool in ['suite', 'autoService', 'autoConfirm', 'imeiAutofill', 'gdException', 'stockSearch', 'autoOpenWo']
+        && d.event is string && d.event.matches('^[a-z_]{1,32}$')
+        && d.store is string && d.store.matches('^[0-9A-Za-z-]{0,12}$')
+        && d.install is string && d.install.matches('^[A-Za-z0-9]{10,40}$')
+        && d.account is string && d.account.matches('^[A-Za-z0-9]{10,40}$')
+        && d.version is string && d.version.size() <= 20
+        && d.toolVersion is string && d.toolVersion.size() <= 20
+        && d.browser is string && d.browser.size() <= 40
+        && d.test is bool
+        && d.at is timestamp
+        && d.day is string && d.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.ago is int && d.ago >= 0
+        && d.received == request.time
+        && optStr(d, 'code', 40) && optStr(d, 'service', 20) && optStr(d, 'program', 80)
+        && optStr(d, 'step', 20) && optStr(d, 'from', 20) && optInt(d, 'seconds', 604800)
+        && optBool(d, 'standIn') && optStr(d, 'missing', 20) && optStr(d, 'choice', 20)
+        && optInt(d, 'amount', 100) && optBool(d, 'repeat') && optInt(d, 'filled', 100)
+        && optBool(d, 'partial')
+        && (!('tools' in d) || (d.tools is list && d.tools.size() <= 30))
+        && (!('toolsOff' in d) || (d.toolsOff is list && d.toolsOff.size() <= 30));
+    }
+
+    match /events/{id} {
+      allow create: if validEvent(request.resource.data);
+      allow read: if isAdmin();
+    }
+
+    match /config/{doc} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

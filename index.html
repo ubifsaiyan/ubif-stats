@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>uBiF Web Extensions — Usage Stats</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo">a</span>
+      <div>
+        <h1>uBiF Web Extensions — Usage Stats</h1>
+        <p class="sub">Time saved and tool usage across stores. Times are Central (America/Chicago).</p>
+      </div>
+    </div>
+    <div class="who" id="who" hidden>
+      <span id="whoEmail"></span>
+      <button type="button" id="signOut">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="signedOut" class="card center" hidden>
+      <h2>Sign in</h2>
+      <p>Only allowed Google accounts can see the stats.</p>
+      <button type="button" id="signIn" class="primary">Sign in with Google</button>
+      <p class="error" id="signInError" hidden></p>
+    </section>
+
+    <section id="noAccess" class="card center" hidden>
+      <h2>No access</h2>
+      <p><span id="noAccessEmail"></span> isn't on the list of accounts that can see these stats. Ask the owner to add it, or sign in with another account.</p>
+    </section>
+
+    <div id="app" hidden>
+      <section class="card filters">
+        <div class="field">
+          <label for="range">Dates</label>
+          <select id="range">
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="7" selected>Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="thisMonth">This month</option>
+            <option value="lastMonth">Last month</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </div>
+        <div class="field" id="customDates" hidden>
+          <label for="from">From</label>
+          <input type="date" id="from">
+          <label for="to">to</label>
+          <input type="date" id="to">
+        </div>
+        <div class="field">
+          <label for="store">Store</label>
+          <select id="store"><option value="">All stores</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="includeTest"> Include test copies</label>
+        <button type="button" id="load" class="primary">Load</button>
+        <button type="button" id="csv">Download CSV</button>
+        <span class="status" id="status"></span>
+      </section>
+
+      <section class="cards" id="summary"></section>
+
+      <section class="card">
+        <h2>Time saved per day</h2>
+        <div id="chart" class="chart"></div>
+      </section>
+
+      <section class="card">
+        <h2>Time saved by action</h2>
+        <p class="help">Count × seconds each = time saved. Change the seconds to match how long each job takes by hand, then press Save; every total on this page updates.</p>
+        <table id="timeTable"></table>
+        <div class="row-actions"><button type="button" id="saveSeconds" class="primary">Save seconds</button> <span class="status" id="secondsStatus"></span></div>
+      </section>
+
+      <section class="card">
+        <h2>By store</h2>
+        <div class="scroll"><table id="storeTable"></table></div>
+      </section>
+
+      <section class="card">
+        <h2>By day</h2>
+        <div class="scroll"><table id="dayTable"></table></div>
+      </section>
+
+      <section class="card two">
+        <div>
+          <h2>Autocomplete Service problems</h2>
+          <p class="help">Runs that stopped with an error, by code.</p>
+          <table id="errorTable"></table>
+        </div>
+        <div>
+          <h2>Other Autocomplete stops</h2>
+          <p class="help">Stopped on purpose or nothing to do.</p>
+          <table id="stopTable"></table>
+        </div>
+      </section>
+
+      <section class="card two">
+        <div>
+          <h2>Verizon free accessory reminder</h2>
+          <table id="vzTable"></table>
+        </div>
+        <div>
+          <h2>Users</h2>
+          <table id="userTable"></table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Tools switched on and off</h2>
+        <p class="help">From each install's latest daily check-in in this date range.</p>
+        <div class="scroll"><table id="toolTable"></table></div>
+      </section>
+
+      <section class="card">
+        <h2>Who can see this page</h2>
+        <p class="help">ubifsaiyan@gmail.com and robert.wilkins@ubreakifix.com always can. Add other Google accounts here (one per line), then Save.</p>
+        <textarea id="admins" rows="3" placeholder="name@example.com"></textarea>
+        <div class="row-actions"><button type="button" id="saveAdmins" class="primary">Save</button> <span class="status" id="adminsStatus"></span></div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
