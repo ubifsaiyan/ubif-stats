@@ -1,6 +1,6 @@
 # uBiF Web Extensions — Privacy Policy
 
-Last updated: November 21, 2026
+Last updated: November 22, 2026
 
 uBiF Web Extensions is a set of tools for uBreakiFix store staff. This policy explains what the
 extension does with information.
@@ -31,8 +31,8 @@ record contains only:
 - the date and time it happened.
 
 Once a day each copy also sends a check-in with the same IDs, store number and versions, plus which
-tools are switched on and which are switched off, each with its version number. **No names, email addresses, customer information, work order contents or web
-addresses are sent.** The records can only be read by the developer's stats page, signed in with
+tools are switched on and which are switched off, each with its version number. **No names, email
+addresses, customer information, work order contents or web addresses are sent.** The records can only be read by the developer's stats page, signed in with
 an allowed Google account, and are used only to measure usage and time saved and to find problems.
 They are never sold or shared for any other purpose.
 
@@ -54,12 +54,13 @@ email account, and that service's privacy policy applies.
 If you press **File GD Exception** on a work order, the extension reads that work order (GSPN
 ticket number, IMEI, device model) and your portal login (your name and email, the store number and
 store email) and types them into Samsung's exception request form on forms-prod.sprinklr.com — the
-same form you would otherwise fill in by hand. You review the form and submit it yourself. That
-information goes to Samsung only, when you press the button, and is kept in your browser's storage
-only for the moment it takes to open the form. Once the form is filled in, the extension presses
-Submit for you (you can switch this off in Settings), and when Samsung's confirmation appears it
-adds that confirmation text (with Samsung's ticket number) to the work order's notes in the portal. **Create GSPN Ticket** asks the portal to create a
-GSPN ticket for the work order, exactly as the portal's own link does; nothing leaves the portal.
+same form you would otherwise fill in by hand. Once every field is filled in, the extension presses
+Submit for you (you can switch this off in Settings and press it yourself), and when Samsung's
+confirmation appears it adds that confirmation text (with Samsung's ticket number) to the work
+order's notes in the portal. That information goes to Samsung only, when you press the button, and
+is kept in your browser's storage only for the moment it takes to open the form. **Create GSPN
+Ticket** asks the portal to create a GSPN ticket for the work order, exactly as the portal's own
+link does; nothing leaves the portal.
 
 ## Contact
 
