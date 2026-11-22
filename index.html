@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>uBiF Web Extensions — Usage Stats</title>
   <meta name="robots" content="noindex">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="top">
@@ -74,9 +74,9 @@
 
       <section class="card">
         <h2>Time saved by action</h2>
-        <p class="help">Count × seconds each = time saved. Change the seconds to match how long each job takes by hand, then press Save; every total on this page updates.</p>
+        <p class="help">Count × time saved each = time saved. Type how long each job takes by hand as seconds, minutes or hours (<code>45s</code>, <code>4.5m</code>, <code>1h</code>, <code>1m 30s</code>; decimals are fine, a bare number means seconds), then press Save; every total on this page updates.</p>
         <table id="timeTable"></table>
-        <div class="row-actions"><button type="button" id="saveSeconds" class="primary">Save seconds</button> <span class="status" id="secondsStatus"></span></div>
+        <div class="row-actions"><button type="button" id="saveSeconds" class="primary">Save times</button> <span class="status" id="secondsStatus"></span></div>
       </section>
 
       <section class="card">
@@ -128,6 +128,6 @@
     </div>
   </main>
 
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>

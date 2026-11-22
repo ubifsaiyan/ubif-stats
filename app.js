@@ -195,6 +195,36 @@ const secsFor = (key) => {
   const a = ACTIONS.find((x) => x.key === key);
   return seconds[key] !== undefined ? seconds[key] : (a && a.def) || 0;
 };
+// "270", "270s", "4.5m", "1.5h", "1m 30s", "1h 2m 3s" -> seconds (decimals allowed). null if it can't be read.
+function parseTime(text) {
+  const t = String(text || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!t) return 0;
+  if (/^\d+(\.\d+)?$/.test(t)) return Number(t);
+  let total = 0, rest = t, any = false;
+  const re = /^(\d+(?:\.\d+)?)(hours|hour|hrs|hr|h|minutes|minute|mins|min|m|seconds|second|secs|sec|s)/;
+  while (rest) {
+    const m = rest.match(re);
+    if (!m) return null;
+    total += Number(m[1]) * (m[2][0] === 'h' ? 3600 : m[2][0] === 'm' ? 60 : 1);
+    rest = rest.slice(m[0].length);
+    any = true;
+  }
+  return any ? total : null;
+}
+// seconds -> "4.5m", "30s", "1.5h" for the input box.
+function fmtTime(sec) {
+  sec = Number(sec) || 0;
+  const r = (x) => String(Math.round(x * 100) / 100);
+  if (sec >= 3600 && sec % 360 === 0) return r(sec / 3600) + 'h';
+  if (sec >= 60 && (sec % 60 === 0 || sec % 6 === 0)) return r(sec / 60) + 'm';
+  return r(sec) + 's';
+}
+function readTimeInput(input) {
+  const v = parseTime(input.value);
+  input.classList.toggle('bad', v === null);
+  return v === null ? null : Math.max(0, v);
+}
+
 const savedBy = (list) => list.reduce((s, e) => { const a = actionOf(e); return s + (a ? secsFor(a.key) : 0); }, 0);
 const vzMoney = (list) => list.filter(is.vz).reduce((s, e) => s + (e.amount || 0), 0);
 const distinct = (list, k) => new Set(list.map((e) => e[k]).filter(Boolean)).size;
@@ -230,13 +260,17 @@ function render() {
   // Time saved by action (editable seconds)
   const tt = $('timeTable');
   tt.replaceChildren();
-  tt.append(el('thead', {}, el('tr', {}, el('th', { text: 'Action' }), el('th', { class: 'num', text: 'Count' }), el('th', { class: 'num', text: 'Seconds each' }), el('th', { class: 'num', text: 'Time saved' }))));
+  tt.append(el('thead', {}, el('tr', {}, el('th', { text: 'Action' }), el('th', { class: 'num', text: 'Count' }), el('th', { class: 'num', text: 'Time saved each' }), el('th', { class: 'num', text: 'Time saved' }))));
   const tb = el('tbody');
   for (const a of ACTIONS) {
     const n = ev.filter(a.match).length;
-    const input = el('input', { type: 'number', min: '0', step: '1', class: 'secs', 'data-key': a.key });
-    input.value = secsFor(a.key);
-    input.addEventListener('change', () => { seconds[a.key] = Math.max(0, Number(input.value) || 0); render(); $('secondsStatus').textContent = 'Not saved yet'; });
+    const input = el('input', { type: 'text', inputmode: 'decimal', class: 'secs', 'data-key': a.key, placeholder: '0s', title: 'Seconds, minutes or hours: 45s, 4.5m, 1h, or 1m 30s' });
+    input.value = fmtTime(secsFor(a.key));
+    input.addEventListener('change', () => {
+      const v = readTimeInput(input);
+      if (v === null) { $('secondsStatus').textContent = 'Can\'t read "' + input.value + '". Use 45s, 4.5m or 1h.'; return; }
+      seconds[a.key] = v; render(); $('secondsStatus').textContent = 'Not saved yet';
+    });
     tb.append(el('tr', {}, el('td', { text: a.label }), el('td', { class: 'num', text: num(n) }), el('td', { class: 'num' }, input), el('td', { class: 'num', text: dur(n * secsFor(a.key)) })));
   }
   tb.append(el('tr', { class: 'total' }, el('td', { text: 'Total' }), el('td', { class: 'num', text: num(ev.filter((e) => actionOf(e)).length) }), el('td'), el('td', { class: 'num', text: dur(total) })));
@@ -381,7 +415,9 @@ async function loadConfig() {
 }
 
 async function saveSeconds() {
-  document.querySelectorAll('input.secs').forEach((i) => { seconds[i.dataset.key] = Math.max(0, Number(i.value) || 0); });
+  let bad = null;
+  document.querySelectorAll('input.secs').forEach((i) => { const v = readTimeInput(i); if (v === null) bad = i.value; else seconds[i.dataset.key] = v; });
+  if (bad !== null) { $('secondsStatus').textContent = 'Can\'t read "' + bad + '". Use 45s, 4.5m or 1h.'; return; }
   try {
     await setDoc(doc(db, 'config', 'settings'), { seconds }, { merge: true });
     $('secondsStatus').textContent = 'Saved';
