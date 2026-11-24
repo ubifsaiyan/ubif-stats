@@ -18,8 +18,6 @@ Starting with version 1.4.4, the extension sends a small record each time a tool
 | Auto-Confirm Serial | every serial it confirms |
 | IMEI Autofill | every Autofill IMEI click |
 | GD Exception | GSPN tickets created, exception forms opened and filled, forms submitted |
-| In-Stock Search | items added from the In stock box |
-| Auto-Open Work Order | work orders it opened |
 | (whole extension) | one check-in per day per browser profile, with which tools are switched on and which are off, each with its version |
 
 Every record also has: the store number signed into the portal, a random ID for the browser
@@ -29,6 +27,11 @@ versions, the browser, whether it's a test copy, and when it happened.
 **Never sent:** names, email addresses, customer details, work order contents, or web addresses.
 
 On Firefox nothing is sent unless the person allows it (Firefox asks).
+
+**No longer counted (from 1.6.0):** In-Stock Search (items added from the In stock box) and
+Auto-Open Work Order (work orders it opened). They work on their own, so the counts said little.
+Records sent by 1.4.4 to 1.5.0 are still shown in the time-saved table, marked "counted until
+1.6.0". Both tools still appear in the daily on/off check-in.
 
 ## Files
 

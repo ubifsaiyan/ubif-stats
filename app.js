@@ -35,8 +35,8 @@ const ACTIONS = [
   { key: 'imeiAutofill.filled', label: 'IMEI Autofill: IMEI filled', match: (e) => e.tool === 'imeiAutofill' && e.event === 'filled' },
   { key: 'gdException.gspn_created', label: 'GD Exception: GSPN ticket created', match: (e) => e.tool === 'gdException' && e.event === 'gspn_created' },
   { key: 'gdException.form_filled', label: 'GD Exception: exception form filled in', match: (e) => e.tool === 'gdException' && e.event === 'form_filled' },
-  { key: 'stockSearch.added', label: 'In-Stock Search: item added from the In stock box', match: (e) => e.tool === 'stockSearch' && e.event === 'added' },
-  { key: 'autoOpenWo.opened', label: 'Auto-Open Work Order: work order opened', match: (e) => e.tool === 'autoOpenWo' && e.event === 'opened' },
+  { key: 'stockSearch.added', label: 'In-Stock Search: item added from the In stock box (counted until 1.6.0)', match: (e) => e.tool === 'stockSearch' && e.event === 'added' },
+  { key: 'autoOpenWo.opened', label: 'Auto-Open Work Order: work order opened (counted until 1.6.0)', match: (e) => e.tool === 'autoOpenWo' && e.event === 'opened' },
 ];
 const actionOf = (e) => ACTIONS.find((a) => a.match(e));
 
@@ -245,8 +245,6 @@ function render() {
     { label: 'GD exceptions filed', value: num(count(is.gdFiled)), note: `${num(count(is.gdFilled))} forms filled · ${num(count(is.gspn))} GSPN tickets` },
     { label: 'Serials auto-confirmed', value: num(count(is.confirm)) },
     { label: 'IMEI autofills', value: num(count(is.imei)) },
-    { label: 'In-stock items added', value: num(count(is.stock)) },
-    { label: 'Work orders auto-opened', value: num(count(is.open)) },
     { label: 'Installs active', value: num(distinct(ev, 'install')), note: `${num(distinct(ev, 'account'))} accounts · ${num(distinct(ev, 'store'))} stores` },
   ];
   $('summary').replaceChildren(...cards.map((c) => el('div', { class: 'stat' + (c.big ? ' big' : '') },
@@ -279,9 +277,9 @@ function render() {
   // By store
   const byStore = new Map();
   for (const e of ev) { const k = e.store || '(unknown)'; if (!byStore.has(k)) byStore.set(k, []); byStore.get(k).push(e); }
-  const storeRow = (k, l) => [k, num(distinct(l, 'install')), dur(savedBy(l)), num(l.filter(is.completed).length), num(l.filter(is.error).length), num(l.filter(is.confirm).length), num(l.filter(is.imei).length), num(l.filter(is.gdFiled).length), num(l.filter(is.stock).length), num(l.filter(is.open).length), money(vzMoney(l))];
+  const storeRow = (k, l) => [k, num(distinct(l, 'install')), dur(savedBy(l)), num(l.filter(is.completed).length), num(l.filter(is.error).length), num(l.filter(is.confirm).length), num(l.filter(is.imei).length), num(l.filter(is.gdFiled).length), money(vzMoney(l))];
   const storeKeys = [...byStore.keys()].sort((a, b) => savedBy(byStore.get(b)) - savedBy(byStore.get(a)));
-  table('storeTable', ['Store', 'Installs', 'Time saved', 'Autocomplete', 'Errors', 'Auto-confirms', 'IMEI', 'GD filed', 'In-stock', 'Auto-open', 'Verizon $'],
+  table('storeTable', ['Store', 'Installs', 'Time saved', 'Autocomplete', 'Errors', 'Auto-confirms', 'IMEI', 'GD filed', 'Verizon $'],
     storeKeys.map((k) => storeRow(k, byStore.get(k))), storeKeys.length > 1 ? storeRow('All', ev) : null);
 
   // By day
@@ -345,7 +343,8 @@ const TOOL_NAMES = {
   autoOpenWo: 'Auto-Open Work Order', autoService: 'Autocomplete Service', stockSearch: 'In-Stock Search',
   poPartNames: 'PO Part Names', autoConfirm: 'Auto-Confirm Serial', tabTitle: 'Detailed Tab Titles',
   poFormat: 'PO Format Fixer', gdException: 'GD Exception', ebay: 'Listing Checker',
-  imeiAutofill: 'IMEI Autofill', woTools: 'Workorder Sorting & Formatting',
+  imeiAutofill: 'IMEI Autofill', woTools: 'Workorder Sorting & Formatting', pullbacks: 'Pullbacks 2026',
+  partsOrder: 'Parts Order Form',
 };
 function renderTools(ev) {
   const latest = new Map();
