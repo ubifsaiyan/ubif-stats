@@ -18,6 +18,7 @@ Starting with version 1.4.4, the extension sends a small record each time a tool
 | Auto-Confirm Serial | every serial it confirms |
 | IMEI Autofill | every Autofill IMEI click |
 | GD Exception | GSPN tickets created, exception forms opened and filled, forms submitted |
+| Pullbacks 2026 (from 1.6.3) | each time someone marks parts for RMA: how many were marked and how many failed (no serial numbers or part names) |
 | (whole extension) | one check-in per day per browser profile, with which tools are switched on and which are off, each with its version |
 
 Every record also has: the store number signed into the portal, a random ID for the browser

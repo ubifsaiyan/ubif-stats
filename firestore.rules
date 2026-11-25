@@ -29,8 +29,9 @@ service cloud.firestore {
         && d.keys().hasOnly(['tool', 'event', 'store', 'install', 'account', 'version', 'toolVersion',
                              'browser', 'test', 'at', 'day', 'ago', 'received',
                              'code', 'service', 'program', 'step', 'from', 'seconds', 'standIn',
-                             'missing', 'choice', 'amount', 'repeat', 'filled', 'partial', 'tools', 'toolsOff'])
-        && d.tool in ['suite', 'autoService', 'autoConfirm', 'imeiAutofill', 'gdException', 'stockSearch', 'autoOpenWo']
+                             'missing', 'choice', 'amount', 'repeat', 'filled', 'partial', 'tools', 'toolsOff',
+                             'parts', 'partsFailed'])
+        && d.tool in ['suite', 'autoService', 'autoConfirm', 'imeiAutofill', 'gdException', 'stockSearch', 'autoOpenWo', 'pullbacks']
         && d.event is string && d.event.matches('^[a-z_]{1,32}$')
         && d.store is string && d.store.matches('^[0-9A-Za-z-]{0,12}$')
         && d.install is string && d.install.matches('^[A-Za-z0-9]{10,40}$')
@@ -47,7 +48,7 @@ service cloud.firestore {
         && optStr(d, 'step', 20) && optStr(d, 'from', 20) && optInt(d, 'seconds', 604800)
         && optBool(d, 'standIn') && optStr(d, 'missing', 20) && optStr(d, 'choice', 20)
         && optInt(d, 'amount', 100) && optBool(d, 'repeat') && optInt(d, 'filled', 100)
-        && optBool(d, 'partial')
+        && optBool(d, 'partial') && optInt(d, 'parts', 5000) && optInt(d, 'partsFailed', 5000)
         && (!('tools' in d) || (d.tools is list && d.tools.size() <= 30))
         && (!('toolsOff' in d) || (d.toolsOff is list && d.toolsOff.size() <= 30));
     }

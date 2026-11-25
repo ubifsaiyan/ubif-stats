@@ -35,10 +35,14 @@ const ACTIONS = [
   { key: 'imeiAutofill.filled', label: 'IMEI Autofill: IMEI filled', match: (e) => e.tool === 'imeiAutofill' && e.event === 'filled' },
   { key: 'gdException.gspn_created', label: 'GD Exception: GSPN ticket created', match: (e) => e.tool === 'gdException' && e.event === 'gspn_created' },
   { key: 'gdException.form_filled', label: 'GD Exception: exception form filled in', match: (e) => e.tool === 'gdException' && e.event === 'form_filled' },
+  { key: 'pullbacks.marked', label: 'Pullbacks 2026: part marked for RMA (each part)', def: 30, units: (e) => e.parts || 0, match: (e) => e.tool === 'pullbacks' && e.event === 'marked' },
   { key: 'stockSearch.added', label: 'In-Stock Search: item added from the In stock box (counted until 1.6.0)', match: (e) => e.tool === 'stockSearch' && e.event === 'added' },
   { key: 'autoOpenWo.opened', label: 'Auto-Open Work Order: work order opened (counted until 1.6.0)', match: (e) => e.tool === 'autoOpenWo' && e.event === 'opened' },
 ];
 const actionOf = (e) => ACTIONS.find((a) => a.match(e));
+// How many times one record counts: 1, or for Pullbacks the number of parts marked in that run.
+const unitsOf = (a, e) => (a.units ? a.units(e) : 1);
+const unitsIn = (list, a) => list.filter(a.match).reduce((s, e) => s + unitsOf(a, e), 0);
 
 const is = {
   completed: (e) => e.tool === 'autoService' && e.event === 'completed',
@@ -52,7 +56,9 @@ const is = {
   gspn: (e) => e.tool === 'gdException' && e.event === 'gspn_created',
   stock: (e) => e.tool === 'stockSearch' && e.event === 'added',
   open: (e) => e.tool === 'autoOpenWo' && e.event === 'opened',
+  pb: (e) => e.tool === 'pullbacks' && e.event === 'marked',
 };
+const pbParts = (list) => list.filter(is.pb).reduce((s, e) => s + (e.parts || 0), 0);
 
 // ---------- State ----------
 let seconds = {};        // action key -> seconds saved each
@@ -225,7 +231,7 @@ function readTimeInput(input) {
   return v === null ? null : Math.max(0, v);
 }
 
-const savedBy = (list) => list.reduce((s, e) => { const a = actionOf(e); return s + (a ? secsFor(a.key) : 0); }, 0);
+const savedBy = (list) => list.reduce((s, e) => { const a = actionOf(e); return s + (a ? secsFor(a.key) * unitsOf(a, e) : 0); }, 0);
 const vzMoney = (list) => list.filter(is.vz).reduce((s, e) => s + (e.amount || 0), 0);
 const distinct = (list, k) => new Set(list.map((e) => e[k]).filter(Boolean)).size;
 
@@ -245,6 +251,7 @@ function render() {
     { label: 'GD exceptions filed', value: num(count(is.gdFiled)), note: `${num(count(is.gdFilled))} forms filled · ${num(count(is.gspn))} GSPN tickets` },
     { label: 'Serials auto-confirmed', value: num(count(is.confirm)) },
     { label: 'IMEI autofills', value: num(count(is.imei)) },
+    { label: 'Pullback parts marked for RMA', value: num(pbParts(ev)), note: `${num(distinct(ev.filter(is.pb), 'store'))} stores · ${num(count(is.pb))} runs` + (ev.some((e) => is.pb(e) && e.partsFailed) ? ` · ${num(ev.filter(is.pb).reduce((s, e) => s + (e.partsFailed || 0), 0))} failed` : '') },
     { label: 'Installs active', value: num(distinct(ev, 'install')), note: `${num(distinct(ev, 'account'))} accounts · ${num(distinct(ev, 'store'))} stores` },
   ];
   $('summary').replaceChildren(...cards.map((c) => el('div', { class: 'stat' + (c.big ? ' big' : '') },
@@ -252,7 +259,7 @@ function render() {
 
   // Chart: time saved per day
   const perDay = Object.fromEntries(days.map((d) => [d, 0]));
-  for (const e of ev) { const a = actionOf(e); if (a && e.day in perDay) perDay[e.day] += secsFor(a.key); }
+  for (const e of ev) { const a = actionOf(e); if (a && e.day in perDay) perDay[e.day] += secsFor(a.key) * unitsOf(a, e); }
   drawChart(days, days.map((d) => perDay[d]));
 
   // Time saved by action (editable seconds)
@@ -261,7 +268,7 @@ function render() {
   tt.append(el('thead', {}, el('tr', {}, el('th', { text: 'Action' }), el('th', { class: 'num', text: 'Count' }), el('th', { class: 'num', text: 'Time saved each' }), el('th', { class: 'num', text: 'Time saved' }))));
   const tb = el('tbody');
   for (const a of ACTIONS) {
-    const n = ev.filter(a.match).length;
+    const n = unitsIn(ev, a);
     const input = el('input', { type: 'text', inputmode: 'decimal', class: 'secs', 'data-key': a.key, placeholder: '0s', title: 'Seconds, minutes or hours: 45s, 4.5m, 1h, or 1m 30s' });
     input.value = fmtTime(secsFor(a.key));
     input.addEventListener('change', () => {
@@ -271,21 +278,21 @@ function render() {
     });
     tb.append(el('tr', {}, el('td', { text: a.label }), el('td', { class: 'num', text: num(n) }), el('td', { class: 'num' }, input), el('td', { class: 'num', text: dur(n * secsFor(a.key)) })));
   }
-  tb.append(el('tr', { class: 'total' }, el('td', { text: 'Total' }), el('td', { class: 'num', text: num(ev.filter((e) => actionOf(e)).length) }), el('td'), el('td', { class: 'num', text: dur(total) })));
+  tb.append(el('tr', { class: 'total' }, el('td', { text: 'Total' }), el('td', { class: 'num', text: num(ACTIONS.reduce((s, a) => s + unitsIn(ev, a), 0)) }), el('td'), el('td', { class: 'num', text: dur(total) })));
   tt.append(tb);
 
   // By store
   const byStore = new Map();
   for (const e of ev) { const k = e.store || '(unknown)'; if (!byStore.has(k)) byStore.set(k, []); byStore.get(k).push(e); }
-  const storeRow = (k, l) => [k, num(distinct(l, 'install')), dur(savedBy(l)), num(l.filter(is.completed).length), num(l.filter(is.error).length), num(l.filter(is.confirm).length), num(l.filter(is.imei).length), num(l.filter(is.gdFiled).length), money(vzMoney(l))];
+  const storeRow = (k, l) => [k, num(distinct(l, 'install')), dur(savedBy(l)), num(l.filter(is.completed).length), num(l.filter(is.error).length), num(l.filter(is.confirm).length), num(l.filter(is.imei).length), num(l.filter(is.gdFiled).length), num(pbParts(l)), money(vzMoney(l))];
   const storeKeys = [...byStore.keys()].sort((a, b) => savedBy(byStore.get(b)) - savedBy(byStore.get(a)));
-  table('storeTable', ['Store', 'Installs', 'Time saved', 'Autocomplete', 'Errors', 'Auto-confirms', 'IMEI', 'GD filed', 'Verizon $'],
+  table('storeTable', ['Store', 'Installs', 'Time saved', 'Autocomplete', 'Errors', 'Auto-confirms', 'IMEI', 'GD filed', 'Pullback parts', 'Verizon $'],
     storeKeys.map((k) => storeRow(k, byStore.get(k))), storeKeys.length > 1 ? storeRow('All', ev) : null);
 
   // By day
-  const dayRow = (d, l) => [d, dur(savedBy(l)), num(l.filter(is.completed).length), num(l.filter(is.error).length), num(l.filter(is.confirm).length), num(l.filter(is.imei).length), num(l.filter(is.gdFiled).length), money(vzMoney(l)), num(distinct(l, 'install'))];
+  const dayRow = (d, l) => [d, dur(savedBy(l)), num(l.filter(is.completed).length), num(l.filter(is.error).length), num(l.filter(is.confirm).length), num(l.filter(is.imei).length), num(l.filter(is.gdFiled).length), num(pbParts(l)), money(vzMoney(l)), num(distinct(l, 'install'))];
   const byDay = (d) => ev.filter((e) => e.day === d);
-  table('dayTable', ['Day', 'Time saved', 'Autocomplete', 'Errors', 'Auto-confirms', 'IMEI', 'GD filed', 'Verizon $', 'Installs active'],
+  table('dayTable', ['Day', 'Time saved', 'Autocomplete', 'Errors', 'Auto-confirms', 'IMEI', 'GD filed', 'Pullback parts', 'Verizon $', 'Installs active'],
     days.slice().reverse().map((d) => dayRow(d, byDay(d))), days.length > 1 ? dayRow('All', ev) : null);
 
   // Autocomplete problems and stops, by code
