@@ -1,6 +1,6 @@
 # uBiF Web Extensions — Privacy Policy
 
-Last updated: November 22, 2026
+Last updated: November 25, 2026
 
 uBiF Web Extensions is a set of tools for uBreakiFix store staff. This policy explains what the
 extension does with information.
@@ -8,8 +8,11 @@ extension does with information.
 ## What stays on your computer
 
 The extension reads the uBreakiFix NextGen Portal, eBay and Amazon pages you open so it can
-improve them (for example, showing part names or warning about a listing). It saves your
-settings, your eBay seller blacklist and cached part names in your browser's own storage. Your
+improve them (for example, showing part names or warning about a listing). It also reads the
+company's Special Order Parts Order Google form, only after you allow it and only in tabs it
+opened itself (see below). It saves your
+settings (including the portal color you picked), your eBay seller blacklist and cached part names
+in your browser's own storage. Your
 settings may sync between your own computers through your Chrome or Firefox account. None of
 this is sent to the developer or anyone else.
 
@@ -20,7 +23,8 @@ counts to the developer's Google Firebase database (project "uBiF Web Extensions
 record contains only:
 
 - which tool and what happened (for example "Autocomplete Service: reached Checkout", "Auto-Confirm
-  Serial: confirmed", "IMEI Autofill: filled", "GD Exception: form submitted"), and for Autocomplete
+  Serial: confirmed", "IMEI Autofill: filled", "GD Exception: form submitted", "Pullbacks 2026:
+  12 parts marked for RMA, 0 failed"), and for Autocomplete
   Service the type of service (for example "Verizon In-Person Device Refresh"), how long the run
   took, where it started, and a short code for why it stopped; for the Verizon free accessory
   reminder, what was missing, which button was pressed and the $15 reimbursement it may have saved;
@@ -61,6 +65,28 @@ order's notes in the portal. That information goes to Samsung only, when you pre
 is kept in your browser's storage only for the moment it takes to open the form. **Create GSPN
 Ticket** asks the portal to create a GSPN ticket for the work order, exactly as the portal's own
 link does; nothing leaves the portal.
+
+If you press **Order Parts** on a work order and then **Submit**, the extension opens the company's
+Special Order Parts Order Google form (docs.google.com) once per part and fills in what you chose in
+the pop-up: the store, district manager, type of repair, your answers to the form's questions, the
+work order number, the part link and anything typed under "SKU if known". It then presses Next and
+Submit on that form for you. That information goes to the company's purchasing team through Google
+Forms, exactly as if you had filled in the form by hand, and only when you press Submit. Afterwards
+the extension adds a note with the part links to the work order in the portal. The list of parts is
+kept in your browser's storage for up to a day so the result can be shown, and is cleared when the
+browser restarts. Nothing about it is sent to the developer.
+
+**Print Buyback Label** (in a part's View details pop-up) reads that part's work order from the
+portal and sends the label to the DYMO printer on your computer. Nothing leaves the portal and your
+computer.
+
+**Pullbacks 2026** (managers only) looks up the serial numbers you scan or paste, in the portal.
+When you press Mark, it marks those parts for RMA in the portal with the reason "Pullback" and
+reason details that include your portal email (for example "2026 Q4 Pullbacks - Actioned by
+you@ubreakifix.com"), the same as doing it by hand. The list is kept in your browser's storage so
+it isn't lost if the page reloads. Nothing about it leaves the portal and your computer, except the
+usage count described above (how many parts were marked and how many failed; no serial numbers or
+part names).
 
 ## Contact
 
