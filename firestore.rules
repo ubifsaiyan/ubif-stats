@@ -23,6 +23,7 @@ service cloud.firestore {
     function optInt(d, k, max) { return !(k in d) || (d[k] is int && d[k] >= 0 && d[k] <= max); }
     function optBool(d, k) { return !(k in d) || d[k] is bool; }
 
+    // imeiTry ... hiddenSecs: Autocomplete Service 1.17.0+ (extension 1.7.5+), why runs stop.
     function validEvent(d) {
       return d.keys().hasAll(['tool', 'event', 'store', 'install', 'account', 'version', 'toolVersion',
                               'browser', 'test', 'at', 'day', 'ago', 'received'])
@@ -30,7 +31,9 @@ service cloud.firestore {
                              'browser', 'test', 'at', 'day', 'ago', 'received',
                              'code', 'service', 'program', 'step', 'from', 'seconds', 'standIn',
                              'missing', 'choice', 'amount', 'repeat', 'filled', 'partial', 'tools', 'toolsOff',
-                             'parts', 'partsFailed'])
+                             'parts', 'partsFailed',
+                             'imeiTry', 'imeiMs', 'imeiRight', 'imeiFound', 'noPw', 'blank', 'msg',
+                             'sub', 'repeats', 'dialog', 'hiddenSecs'])
         && d.tool in ['suite', 'autoService', 'autoConfirm', 'imeiAutofill', 'gdException', 'stockSearch', 'autoOpenWo', 'pullbacks']
         && d.event is string && d.event.matches('^[a-z_]{1,32}$')
         && d.store is string && d.store.matches('^[0-9A-Za-z-]{0,12}$')
@@ -49,6 +52,10 @@ service cloud.firestore {
         && optBool(d, 'standIn') && optStr(d, 'missing', 20) && optStr(d, 'choice', 20)
         && optInt(d, 'amount', 100) && optBool(d, 'repeat') && optInt(d, 'filled', 100)
         && optBool(d, 'partial') && optInt(d, 'parts', 5000) && optInt(d, 'partsFailed', 5000)
+        && optStr(d, 'imeiTry', 10) && optInt(d, 'imeiMs', 600000) && optBool(d, 'imeiRight')
+        && optBool(d, 'imeiFound') && optBool(d, 'noPw') && optStr(d, 'blank', 120) && optStr(d, 'msg', 120)
+        && optStr(d, 'sub', 40) && optInt(d, 'repeats', 10000) && optStr(d, 'dialog', 60)
+        && optInt(d, 'hiddenSecs', 604800)
         && (!('tools' in d) || (d.tools is list && d.tools.size() <= 30))
         && (!('toolsOff' in d) || (d.toolsOff is list && d.toolsOff.size() <= 30));
     }

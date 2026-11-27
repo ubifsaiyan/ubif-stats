@@ -1,6 +1,6 @@
 # uBiF Web Extensions — Privacy Policy
 
-Last updated: November 25, 2026
+Last updated: November 27, 2026
 
 uBiF Web Extensions is a set of tools for uBreakiFix store staff. This policy explains what the
 extension does with information.
@@ -26,7 +26,11 @@ record contains only:
   Serial: confirmed", "IMEI Autofill: filled", "GD Exception: form submitted", "Pullbacks 2026:
   12 parts marked for RMA, 0 failed"), and for Autocomplete
   Service the type of service (for example "Verizon In-Person Device Refresh"), how long the run
-  took, where it started, and a short code for why it stopped; for the Verizon free accessory
+  took, where it started, and a short code for why it stopped; to find out why runs stop, also which
+  step it was on, how long the IMEI step took, how long the tab was in the background, and, only when
+  a run stops, the names of any boxes the portal marked as missing, the portal's own error messages
+  and the title of any pop-up on screen (numbers, email addresses and the customer's name are taken
+  out first); for the Verizon free accessory
   reminder, what was missing, which button was pressed and the $15 reimbursement it may have saved;
 - the uBreakiFix store number you're signed into in the portal;
 - a random ID for this browser profile and a random ID shared by browsers signed into the same
